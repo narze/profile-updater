@@ -12,7 +12,6 @@ defmodule ProfileUpdater do
     {200, data, _res} = Tentacat.Users.me(client)
 
     name = data |> get_in(["name"])
-    email = data |> get_in(["email"])
     login = data |> get_in(["login"])
     follower_count = data |> get_in(["followers"])
     following_count = data |> get_in(["following"])
