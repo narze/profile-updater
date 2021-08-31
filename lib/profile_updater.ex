@@ -43,7 +43,10 @@ defmodule ProfileUpdater do
       "branch" => "main"
     }
 
-    Tentacat.Contents.update(client, login, "profile-updater", "README.md", body)
+    {200, content, _res} =
+      Tentacat.Contents.update(client, login, "profile-updater", "README.md", body)
+
+    IO.inspect(content)
 
     IO.puts("Done.")
   end
