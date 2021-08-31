@@ -37,7 +37,7 @@ defmodule ProfileUpdater do
       "content" => content,
       "committer" => %{
         "name" => name,
-        "email" => email
+        "email" => "#{login}@users.noreply.github.com"
       },
       "sha" => sha,
       "branch" => "main"
