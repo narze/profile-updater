@@ -23,7 +23,10 @@ defmodule ProfileUpdater do
 
     # Update readme
     content =
-      ["# ProfileUpdater", "My name is #{login}, and I have #{follower_count} followers, I also followed #{following_count} users."]
+      [
+        "# ProfileUpdater",
+        "My name is #{login}, and I have #{follower_count} followers, I also followed #{following_count} users."
+      ]
       |> Enum.join("\n\n")
       |> Base.encode64()
 
@@ -31,8 +34,8 @@ defmodule ProfileUpdater do
       "message" => "Update README.md",
       "content" => content,
       "committer" => %{
-        "name"  => name,
-        "email" => email,
+        "name" => name,
+        "email" => email
       },
       "sha" => sha,
       "branch" => "main"
