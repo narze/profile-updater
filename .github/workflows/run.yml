@@ -56,7 +56,7 @@ jobs:
 
       - name: Run code
         run: |
-          mix run -e "ProfileUpdater.hello \"${{ secrets.GITHUB_TOKEN }}\""
+          mix run -e "ProfileUpdater.hello \"${{ secrets.GH_TOKEN }}\""
 
       # - name: Test 🦺
       #   run: |
