@@ -30,6 +30,8 @@ defmodule ProfileUpdater do
       |> Enum.join("\n\n")
       |> Base.encode64()
 
+    IO.puts content
+
     body = %{
       "message" => "Update README.md",
       "content" => content,
@@ -42,5 +44,7 @@ defmodule ProfileUpdater do
     }
 
     Tentacat.Contents.update(client, login, "profile-updater", "README.md", body)
+
+    IO.puts "Done."
   end
 end
