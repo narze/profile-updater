@@ -21,13 +21,10 @@ defmodule ProfileUpdater do
     sha = file |> get_in(["sha"])
 
     # Update readme
-    content =
-      [
-        "# ProfileUpdater",
-        "My name is #{login}, and I have #{follower_count} followers, I also followed #{following_count} users."
-      ]
-      |> Enum.join("\n\n")
-      |> Base.encode64()
+    {:ok, template_file} = File.read("template.md")
+
+    content = template_file
+    |> Base.encode64()
 
     IO.puts(content)
 
@@ -35,15 +32,15 @@ defmodule ProfileUpdater do
       "message" => "Update README.md",
       "content" => content,
       "committer" => %{
-        "name" => name,
-        "email" => "#{login}@users.noreply.github.com"
+        "name" => "narze's bot",
+        "email" => "notbarze@users.noreply.github.com"
       },
       "sha" => sha,
       "branch" => "main"
     }
 
     {200, content, _res} =
-      Tentacat.Contents.update(client, login, "profile-updater", "README.md", body)
+      Tentacat.Contents.update(client, login, login, "README.md", body)
 
     IO.inspect(content)
 
