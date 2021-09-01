@@ -11,20 +11,18 @@ defmodule ProfileUpdater do
     client = Tentacat.Client.new(%{access_token: access_token})
     {200, data, _res} = Tentacat.Users.me(client)
 
-    name = data |> get_in(["name"])
     login = data |> get_in(["login"])
-    follower_count = data |> get_in(["followers"])
-    following_count = data |> get_in(["following"])
 
     # Get current sha of readme
-    {200, file, _res} = Tentacat.Contents.find(client, login, "profile-updater", "README.md")
+    {200, file, _res} = Tentacat.Contents.find(client, login, login, "README.md")
     sha = file |> get_in(["sha"])
 
     # Update readme
     {:ok, template_file} = File.read("template.md")
 
-    content = template_file
-    |> Base.encode64()
+    content =
+      template_file
+      |> Base.encode64()
 
     IO.puts(content)
 
@@ -39,8 +37,7 @@ defmodule ProfileUpdater do
       "branch" => "main"
     }
 
-    {200, content, _res} =
-      Tentacat.Contents.update(client, login, login, "README.md", body)
+    {200, content, _res} = Tentacat.Contents.update(client, login, login, "README.md", body)
 
     IO.inspect(content)
 
