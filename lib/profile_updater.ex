@@ -35,6 +35,7 @@ defmodule ProfileUpdater do
       |> Enum.concat(["\n"])
       |> Enum.concat(active_projects)
       |> Enum.join("\n")
+      |> Kernel.<>("\n\n")
       |> Kernel.<>(template_file)
       |> Base.encode64()
 
