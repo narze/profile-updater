@@ -3,47 +3,129 @@ defmodule ProfileUpdater do
   Documentation for `ProfileUpdater`.
   """
 
-  @doc """
-  Hello world.
+  def run(dry_run \\ false) do
+    access_token = System.get_env("GH_TOKEN")
 
-  """
-  def hello(access_token) do
     client = Tentacat.Client.new(%{access_token: access_token})
     {200, data, _res} = Tentacat.Users.me(client)
 
     login = data |> get_in(["login"])
 
-    # Get current sha of readme
-    {200, file, _res} = Tentacat.Contents.find(client, login, login, "README.md")
-    sha = file |> get_in(["sha"])
-    {200, repos, _res} = Tentacat.Repositories.list_users(client, "narze")
+    {:ok, sha, old_content, start_line, end_line} = get_current_readme(client, login)
+    {:ok, repos_with_topics} = get_repos(client, login)
 
-    repos_with_topics = repos |> Enum.map(fn repo -> %{name: get_in(repo, ["name"]), url: get_in(repo, ["html_url"]), topics: get_in(repo, ["topics"])} end) |> Enum.filter(fn r -> length(get_in(r, [:topics])) > 0 end)
+    {:ok, active_projects} = get_formatted_projects(repos_with_topics, "active-project")
+    {:ok, hacktoberfest_projects} = get_formatted_projects(repos_with_topics, "hacktoberfest")
 
-    repos_tagged_with_active = repos_with_topics |> Enum.filter(fn r -> r |> get_in([:topics]) |> Enum.member?("active-project") end)
+    %DateTime{month: month} = DateTime.utc_now()
 
-    active_projects = repos_tagged_with_active |> Enum.map(fn r ->
-      name = get_in(r, [:name])
-      url = get_in(r, [:url])
-      "- [#{name}](#{url})"
-    end)
-
-    # Update readme
-    {:ok, template_file} = File.read("template.md")
-
-    content = ["Active projects:"]
+    content =
+      ["## Active projects"]
       |> Enum.concat(["\n"])
       |> Enum.concat(active_projects)
+
+    content =
+      if month == 10 do
+        ["## Hacktoberfest projects"]
+        |> Enum.concat(["\n"])
+        |> Enum.concat(hacktoberfest_projects)
+        |> Enum.concat(["\n"])
+        |> Enum.concat(content)
+      else
+        content
+      end
+
+    content =
+      content
       |> Enum.join("\n")
       |> Kernel.<>("\n\n")
-      |> Kernel.<>(template_file)
-      |> Base.encode64()
 
-    IO.puts(content)
+    content =
+      old_content
+      |> Enum.slice(0..start_line)
+      |> Enum.concat([content])
+      |> Enum.concat(old_content |> Enum.slice(end_line..-1))
+      |> Enum.join("\n")
 
+    content = Regex.replace(~r/\n(\n)+/, content, "\n\n")
+
+    content_base64 = content |> Base.encode64()
+
+    if dry_run do
+      File.write!("output.md", content_base64 |> Base.decode64!())
+      IO.puts("Dry-run: output.md written")
+      exit(:normal)
+    end
+
+    {:ok} = update_readme(client, login, content_base64, sha)
+
+    IO.puts("Done.")
+  end
+
+  defp get_current_readme(client, login) do
+    {200, file, _res} = Tentacat.Contents.find(client, login, login, "README.md")
+
+    content =
+      file |> get_in(["content"]) |> Base.decode64!(ignore: :whitespace) |> String.split("\n")
+
+    start_line =
+      content
+      |> Enum.find_index(fn l ->
+        l == "<!--%%% PROFILE UPDATER (narze/profile-updater) : START %%%-->"
+      end)
+
+    end_line =
+      content
+      |> Enum.find_index(fn l ->
+        l == "<!--%%% PROFILE UPDATER (narze/profile-updater) : END %%%-->"
+      end)
+
+    if start_line |> is_nil() || end_line |> is_nil() do
+      raise "Slot not found!"
+    end
+
+    sha = file |> get_in(["sha"])
+
+    {:ok, sha, content, start_line, end_line}
+  end
+
+  defp get_repos(client, login) do
+    {200, repos, _res} = Tentacat.Repositories.list_users(client, login)
+
+    repos_with_topics =
+      repos
+      |> Enum.map(fn repo ->
+        %{
+          name: get_in(repo, ["name"]),
+          url: get_in(repo, ["html_url"]),
+          topics: get_in(repo, ["topics"])
+        }
+      end)
+      |> Enum.filter(fn r -> length(get_in(r, [:topics])) > 0 end)
+
+    {:ok, repos_with_topics}
+  end
+
+  defp get_formatted_projects(repos, topic) do
+    repos_with_topic =
+      repos
+      |> Enum.filter(fn r -> r |> get_in([:topics]) |> Enum.member?(topic) end)
+
+    projects =
+      repos_with_topic
+      |> Enum.map(fn r ->
+        name = get_in(r, [:name])
+        url = get_in(r, [:url])
+        "- [#{name}](#{url})"
+      end)
+
+    {:ok, projects}
+  end
+
+  defp update_readme(client, login, content_base64, sha) do
     body = %{
       "message" => "Update README.md",
-      "content" => content,
+      "content" => content_base64,
       "committer" => %{
         "name" => "narze's bot",
         "email" => "notbarze@users.noreply.github.com"
@@ -52,10 +134,9 @@ defmodule ProfileUpdater do
       "branch" => "main"
     }
 
-    {200, content, _res} = Tentacat.Contents.update(client, login, login, "README.md", body)
+    {200, _updated_content, _res} =
+      Tentacat.Contents.update(client, login, login, "README.md", body)
 
-    IO.inspect(content)
-
-    IO.puts("Done.")
+    {:ok}
   end
 end

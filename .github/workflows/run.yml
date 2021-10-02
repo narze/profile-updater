@@ -2,8 +2,8 @@ name: Run
 
 on:
   workflow_dispatch:
-#   schedule:
-#     - cron: "0 * * * *"
+  schedule:
+    - cron: "0 * * * *"
   push:
     branches: [main]
   pull_request:
@@ -58,8 +58,10 @@ jobs:
       #     # mix docs
 
       - name: Run code
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          mix run -e "ProfileUpdater.hello \"${{ secrets.GH_TOKEN }}\""
+          mix run -e "ProfileUpdater.run"
 
       # - name: Test 🦺
       #   run: |
