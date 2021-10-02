@@ -58,6 +58,8 @@ jobs:
       #     # mix docs
 
       - name: Run code
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           mix run -e "ProfileUpdater.run"
 
