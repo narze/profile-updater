@@ -26,11 +26,11 @@ defmodule ProfileUpdater do
 
     content =
       if month == 10 do
-        content
-        |> Enum.concat(["\n"])
-        |> Enum.concat(["## Hacktoberfest projects"])
+        ["## Hacktoberfest projects"]
         |> Enum.concat(["\n"])
         |> Enum.concat(hacktoberfest_projects)
+        |> Enum.concat(["\n"])
+        |> Enum.concat(content)
       else
         content
       end
