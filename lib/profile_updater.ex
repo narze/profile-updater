@@ -3,11 +3,9 @@ defmodule ProfileUpdater do
   Documentation for `ProfileUpdater`.
   """
 
-  @doc """
-  Hello world.
+  def run do
+    access_token = System.get_env("GH_TOKEN")
 
-  """
-  def hello(access_token) do
     client = Tentacat.Client.new(%{access_token: access_token})
     {200, data, _res} = Tentacat.Users.me(client)
 
@@ -15,6 +13,15 @@ defmodule ProfileUpdater do
 
     # Get current sha of readme
     {200, file, _res} = Tentacat.Contents.find(client, login, login, "README.md")
+    old_content =  file |> get_in(["content"]) |> Base.decode64!(ignore: :whitespace) |> String.split("\n")
+
+    start_line = old_content |> Enum.find_index(fn l -> l == "<!--%%% PROFILE UPDATER (narze/profile-updater) : START %%%-->" end)
+    end_line = old_content |> Enum.find_index(fn l -> l == "<!--%%% PROFILE UPDATER (narze/profile-updater) : END %%%-->" end)
+
+    if start_line |> is_nil() || end_line |> is_nil() do
+      raise "Slot not found!"
+    end
+
     sha = file |> get_in(["sha"])
     {200, repos, _res} = Tentacat.Repositories.list_users(client, "narze")
 
@@ -28,22 +35,36 @@ defmodule ProfileUpdater do
       "- [#{name}](#{url})"
     end)
 
-    # Update readme
-    {:ok, template_file} = File.read("template.md")
+    repos_tagged_with_hacktoberfest = repos_with_topics |> Enum.filter(fn r -> r |> get_in([:topics]) |> Enum.member?("hacktoberfest") end)
 
-    content = ["Active projects:"]
+    hacktoberfest_projects = repos_tagged_with_hacktoberfest |> Enum.map(fn r ->
+      name = get_in(r, [:name])
+      url = get_in(r, [:url])
+      "- [#{name}](#{url})"
+    end)
+
+    content = ["## Hacktoberfest projects"]
+      |> Enum.concat(["\n"])
+      |> Enum.concat(hacktoberfest_projects)
+      |> Enum.concat(["\n"])
+      |> Enum.concat(["## Active projects"])
       |> Enum.concat(["\n"])
       |> Enum.concat(active_projects)
       |> Enum.join("\n")
       |> Kernel.<>("\n\n")
-      |> Kernel.<>(template_file)
-      |> Base.encode64()
 
-    IO.puts(content)
+    content = old_content |> Enum.slice(0..start_line) |> Enum.concat([content]) |> Enum.concat(old_content |> Enum.slice(end_line..-1)) |> Enum.join("\n")
+    content = Regex.replace(~r/\n(\n)+/, content, "\n\n")
+
+    content_base64 = content |> Base.encode64()
+
+    File.write!("output.md", content_base64 |> Base.decode64!())
+
+    IO.puts(content_base64)
 
     body = %{
       "message" => "Update README.md",
-      "content" => content,
+      "content" => content_base64,
       "committer" => %{
         "name" => "narze's bot",
         "email" => "notbarze@users.noreply.github.com"
@@ -52,9 +73,9 @@ defmodule ProfileUpdater do
       "branch" => "main"
     }
 
-    {200, content, _res} = Tentacat.Contents.update(client, login, login, "README.md", body)
+    {200, updated_content, _res} = Tentacat.Contents.update(client, login, login, "README.md", body)
 
-    IO.inspect(content)
+    IO.inspect(updated_content)
 
     IO.puts("Done.")
   end
