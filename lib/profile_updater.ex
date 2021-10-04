@@ -31,7 +31,7 @@ defmodule ProfileUpdater do
 
     content =
       if month == 10 do
-        ["## Hacktoberfest projects"]
+        ["## Hacktoberfest projects", "[What is Hacktoberfest?](https://hacktoberfest.digitalocean.com)"]
         |> Enum.concat(["\n"])
         |> Enum.concat(formatted_hacktoberfest_projects)
         |> Enum.concat(["\n"])
