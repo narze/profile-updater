@@ -13,11 +13,14 @@ defmodule ProfileUpdater do
 
     {:ok, sha, old_content, start_line, end_line} = get_current_readme(client, login)
     {:ok, repos_with_topics} = get_repos(client, login)
+    {:ok, manoonchai_repos} = get_repos(client, "Manoonchai")
 
-    {:ok, active_projects} = get_projects(repos_with_topics, "active-project")
-    {:ok, hacktoberfest_projects} = get_projects(repos_with_topics, "hacktoberfest")
+    all_repos = repos_with_topics |> Enum.concat(manoonchai_repos)
 
-    hacktoberfest_projects = count_projects_pull_requests(client, login, hacktoberfest_projects)
+    {:ok, active_projects} = get_projects(all_repos, "active-project")
+    {:ok, hacktoberfest_projects} = get_projects(all_repos, "hacktoberfest")
+
+    hacktoberfest_projects = count_projects_pull_requests(client, hacktoberfest_projects)
 
     {:ok, formatted_active_projects} = format_projects(active_projects)
     {:ok, formatted_hacktoberfest_projects} = format_projects(hacktoberfest_projects)
@@ -102,6 +105,7 @@ defmodule ProfileUpdater do
       |> Enum.map(fn repo ->
         %{
           name: get_in(repo, ["name"]),
+          org: get_in(repo, ["owner", "login"]),
           url: get_in(repo, ["html_url"]),
           topics: get_in(repo, ["topics"])
         }
@@ -111,10 +115,10 @@ defmodule ProfileUpdater do
     {:ok, repos_with_topics}
   end
 
-  defp count_projects_pull_requests(client, org, repos) do
+  defp count_projects_pull_requests(client, repos) do
     repos
     |> Enum.map(fn p ->
-      pr_count = count_open_pull_requests(client, org, p |> get_in([:name]))
+      pr_count = count_open_pull_requests(client, p |> get_in([:org]), p |> get_in([:name]))
 
       p |> Map.put(:pr_count, pr_count)
     end)
