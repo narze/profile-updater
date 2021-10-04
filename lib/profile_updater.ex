@@ -14,21 +14,26 @@ defmodule ProfileUpdater do
     {:ok, sha, old_content, start_line, end_line} = get_current_readme(client, login)
     {:ok, repos_with_topics} = get_repos(client, login)
 
-    {:ok, active_projects} = get_formatted_projects(repos_with_topics, "active-project")
-    {:ok, hacktoberfest_projects} = get_formatted_projects(repos_with_topics, "hacktoberfest")
+    {:ok, active_projects} = get_projects(repos_with_topics, "active-project")
+    {:ok, hacktoberfest_projects} = get_projects(repos_with_topics, "hacktoberfest")
+
+    hacktoberfest_projects = count_projects_pull_requests(client, login, hacktoberfest_projects)
+
+    {:ok, formatted_active_projects} = format_projects(active_projects)
+    {:ok, formatted_hacktoberfest_projects} = format_projects(hacktoberfest_projects)
 
     %DateTime{month: month} = DateTime.utc_now()
 
     content =
       ["## Active projects"]
       |> Enum.concat(["\n"])
-      |> Enum.concat(active_projects)
+      |> Enum.concat(formatted_active_projects)
 
     content =
       if month == 10 do
         ["## Hacktoberfest projects"]
         |> Enum.concat(["\n"])
-        |> Enum.concat(hacktoberfest_projects)
+        |> Enum.concat(formatted_hacktoberfest_projects)
         |> Enum.concat(["\n"])
         |> Enum.concat(content)
       else
@@ -106,17 +111,46 @@ defmodule ProfileUpdater do
     {:ok, repos_with_topics}
   end
 
-  defp get_formatted_projects(repos, topic) do
-    repos_with_topic =
-      repos
-      |> Enum.filter(fn r -> r |> get_in([:topics]) |> Enum.member?(topic) end)
+  defp count_projects_pull_requests(client, org, repos) do
+    repos
+    |> Enum.map(fn p ->
+      pr_count = count_open_pull_requests(client, org, p |> get_in([:name]))
 
+      p |> Map.put(:pr_count, pr_count)
+    end)
+  end
+
+  defp count_open_pull_requests(client, org, name) do
+    {200, pull_requests, _res} = Tentacat.Pulls.list(client, org, name)
+
+    pull_requests |> length
+  end
+
+  defp get_projects(repos, topic) do
+    {:ok,
+     repos
+     |> Enum.filter(fn r -> r |> get_in([:topics]) |> Enum.member?(topic) end)}
+  end
+
+  defp format_projects(repos) do
     projects =
-      repos_with_topic
+      repos
       |> Enum.map(fn r ->
         name = get_in(r, [:name])
         url = get_in(r, [:url])
-        "- [#{name}](#{url})"
+
+        pr_count =
+          if Map.has_key?(r, :pr_count) do
+            get_in(r, [:pr_count])
+          else
+            0
+          end
+
+        if pr_count > 0 do
+          "- [#{name}](#{url}) (#{pr_count} Pull Requests)"
+        else
+          "- [#{name}](#{url})"
+        end
       end)
 
     {:ok, projects}
