@@ -136,7 +136,7 @@ defmodule ProfileUpdater do
     projects =
       repos
       |> Enum.map(fn r ->
-        name = get_in(r, [:name])
+        name = get_in(r, [:name]) |> get_repo_nickname()
         url = get_in(r, [:url])
 
         pr_count =
@@ -147,13 +147,36 @@ defmodule ProfileUpdater do
           end
 
         if pr_count > 0 do
-          "- [#{name}](#{url}) (#{pr_count} Pull Requests)"
+          "- [#{name}](#{url}) ([#{pr_count} Pull Requests](#{url}/pulls))"
         else
           "- [#{name}](#{url})"
         end
       end)
 
     {:ok, projects}
+  end
+
+  defp get_repo_nickname(name) do
+    nicknames = %{
+      "awesome-cheab-quotes" => "คำคมเฉียบ ๆ",
+      "awesome-salim-quotes" => "วาทะสลิ่มสุดเจ๋ง",
+      "coffee-to-code" => "Coffee to Code",
+      "DaiMai" => "ได้ไหม?",
+      "dumb-questions-th" => "คำถามโง่ ๆ",
+      "hacktoberfest_ez" => "Hacktoberfest EZ",
+      "porsor" => "พส.",
+      "profile-updater" => "Profile Updater",
+      "skoy.js" => "Skoy.js",
+      "torpleng" => "ต่อเพลง",
+      "toSkoy" => "เว็บแปลงภาษาสก๊อย",
+      "THIS_REPO_HAS_3077_STARS" => "THIS REPO HAS 3077 STARS (Banned)"
+    }
+
+    if Map.has_key?(nicknames, name) do
+      nicknames[name]
+    else
+      name |> String.capitalize()
+    end
   end
 
   defp update_readme(client, login, content_base64, sha) do
