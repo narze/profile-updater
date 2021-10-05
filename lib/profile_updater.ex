@@ -34,7 +34,10 @@ defmodule ProfileUpdater do
 
     content =
       if month == 10 do
-        ["## Hacktoberfest projects", "[What is Hacktoberfest?](https://hacktoberfest.digitalocean.com)"]
+        [
+          "## Hacktoberfest projects",
+          "[What is Hacktoberfest?](https://hacktoberfest.digitalocean.com)"
+        ]
         |> Enum.concat(["\n"])
         |> Enum.concat(formatted_hacktoberfest_projects)
         |> Enum.concat(["\n"])
@@ -107,7 +110,8 @@ defmodule ProfileUpdater do
           name: get_in(repo, ["name"]),
           org: get_in(repo, ["owner", "login"]),
           url: get_in(repo, ["html_url"]),
-          topics: get_in(repo, ["topics"])
+          topics: get_in(repo, ["topics"]),
+          issues_count: get_in(repo, ["open_issues_count"])
         }
       end)
       |> Enum.filter(fn r -> length(get_in(r, [:topics])) > 0 end)
@@ -150,8 +154,28 @@ defmodule ProfileUpdater do
             0
           end
 
-        if pr_count > 0 do
-          "- [#{name}](#{url}) ([#{pr_count} Pull Requests](#{url}/pulls))"
+        issues_count = get_in(r, [:issues_count]) - pr_count
+
+        stats =
+          []
+          |> Enum.concat(
+            if pr_count > 0 do
+              ["[#{pr_count} PRs](#{url}/pulls)"]
+            else
+              []
+            end
+          )
+          |> Enum.concat(
+            if issues_count > 0 do
+              ["[#{issues_count} Issues](#{url}/issues)"]
+            else
+              []
+            end
+          )
+          |> Enum.join(" / ")
+
+        if stats != "" do
+          "- [#{name}](#{url}) (#{stats})"
         else
           "- [#{name}](#{url})"
         end
