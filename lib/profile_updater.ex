@@ -23,7 +23,7 @@ defmodule ProfileUpdater do
     hacktoberfest_projects = count_projects_pull_requests(client, hacktoberfest_projects)
 
     {:ok, formatted_active_projects} = format_projects(active_projects)
-    {:ok, formatted_hacktoberfest_projects} = format_projects(hacktoberfest_projects)
+    {:ok, formatted_hacktoberfest_projects} = format_projects(hacktoberfest_projects, true)
 
     %DateTime{month: month} = DateTime.utc_now()
 
@@ -140,7 +140,7 @@ defmodule ProfileUpdater do
      |> Enum.filter(fn r -> r |> get_in([:topics]) |> Enum.member?(topic) end)}
   end
 
-  defp format_projects(repos) do
+  defp format_projects(repos, with_stats \\ false) do
     projects =
       repos
       |> Enum.map(fn r ->
@@ -157,22 +157,26 @@ defmodule ProfileUpdater do
         issues_count = get_in(r, [:issues_count]) - pr_count
 
         stats =
-          []
-          |> Enum.concat(
-            if pr_count > 0 do
-              ["[#{pr_count} PRs](#{url}/pulls)"]
-            else
-              []
-            end
-          )
-          |> Enum.concat(
-            if issues_count > 0 do
-              ["[#{issues_count} Issues](#{url}/issues)"]
-            else
-              []
-            end
-          )
-          |> Enum.join(" / ")
+          if with_stats do
+            []
+            |> Enum.concat(
+              if pr_count > 0 do
+                ["[#{pr_count} PRs](#{url}/pulls)"]
+              else
+                []
+              end
+            )
+            |> Enum.concat(
+              if issues_count > 0 do
+                ["[#{issues_count} Issues](#{url}/issues)"]
+              else
+                []
+              end
+            )
+            |> Enum.join(" / ")
+          else
+            ""
+          end
 
         if stats != "" do
           "- [#{name}](#{url}) (#{stats})"
