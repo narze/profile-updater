@@ -196,6 +196,7 @@ defmodule ProfileUpdater do
       "DaiMai" => "ได้ไหม?",
       "dumb-questions-th" => "คำถามโง่ ๆ",
       "hacktoberfest_ez" => "Hacktoberfest EZ",
+      "nunmun" => "นั่นมัน...!",
       "porsor" => "พส.",
       "profile-updater" => "Profile Updater",
       "skoy.js" => "Skoy.js",
