@@ -208,7 +208,12 @@ defmodule ProfileUpdater do
       "skoy.js" => "Skoy.js",
       "torpleng" => "ต่อเพลง",
       "toSkoy" => "เว็บแปลงภาษาสก๊อย",
-      "THIS_REPO_HAS_3077_STARS" => "THIS REPO HAS 3077 STARS (Banned)"
+      "THIS_REPO_HAS_3077_STARS" => "THIS REPO HAS 3077 STARS (Banned)",
+      "can-i-order-macbook-m1-max-in-thailand-now" => "Can I order MacBook M1 Max in Thailand now?",
+      "Awesome-maas" => "Awesome Markdown as a service",
+      "Awesome-websites-as-answers" => "Awesome websites as answers",
+      "M1-max-excuses" => "M1-max-excuses",
+      "Single-page-svelte" => "Single Page Svelte",
     }
 
     if Map.has_key?(nicknames, name) do
