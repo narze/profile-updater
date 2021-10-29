@@ -25,6 +25,10 @@ defmodule ProfileUpdater do
     {:ok, formatted_active_projects} = format_projects(active_projects)
     {:ok, formatted_hacktoberfest_projects} = format_projects(hacktoberfest_projects, true)
 
+    {200, pr_pages, _res} = Tentacat.Search.issues(client, q: "type:pr user:narze is:merged created:2021-10-01..2021-10-31", sort: "created")
+    {200, pr_data, _res}  = pr_pages |> List.first()
+    merged_prs_count = pr_data |> get_in(["total_count"])
+
     %DateTime{month: month} = DateTime.utc_now()
 
     content =
@@ -35,7 +39,9 @@ defmodule ProfileUpdater do
     content =
       if month == 10 do
         [
-          "## Hacktoberfest projects",
+          "## Hacktoberfest projects (#{merged_prs_count} PRs merged!)",
+          "\n",
+          "\n",
           "[What is Hacktoberfest?](https://hacktoberfest.digitalocean.com)"
         ]
         |> Enum.concat(["\n"])
