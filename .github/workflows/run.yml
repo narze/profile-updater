@@ -3,7 +3,7 @@ name: Run
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/30 * * * *"
   push:
     branches: [main]
   pull_request:
