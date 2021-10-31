@@ -29,7 +29,7 @@ defmodule ProfileUpdater do
     {200, pr_data, _res}  = pr_pages |> List.first()
     merged_prs_count = pr_data |> get_in(["total_count"])
 
-    %DateTime{month: month} = DateTime.utc_now()
+    %DateTime{month: month, day: day} = DateTime.utc_now()
 
     content =
       ["## Active projects"]
@@ -37,7 +37,7 @@ defmodule ProfileUpdater do
       |> Enum.concat(formatted_active_projects)
 
     content =
-      if month == 10 do
+      if month == 10 || (month == 11 && day <= 7) do
         [
           "## Hacktoberfest projects (#{merged_prs_count} PRs merged!)",
           "\n",
