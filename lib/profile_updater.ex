@@ -212,7 +212,7 @@ defmodule ProfileUpdater do
       "can-i-order-macbook-m1-max-in-thailand-now" => "Can I order MacBook M1 Max in Thailand now?",
       "Awesome-maas" => "Awesome Markdown as a service",
       "Awesome-websites-as-answers" => "Awesome websites as answers",
-      "M1-max-excuses" => "M1-max-excuses",
+      "M1-max-excuses" => "M1 Max Excuses",
       "Single-page-svelte" => "Single Page Svelte",
     }
 
