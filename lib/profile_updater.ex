@@ -37,7 +37,7 @@ defmodule ProfileUpdater do
       |> Enum.concat(formatted_active_projects)
 
     content =
-      if month == 10 || (month == 11 && day <= 7) do
+      # if month == 10 || (month == 11 && day <= 7) do
         [
           "## Hacktoberfest projects (#{merged_prs_count} PRs merged!)",
           "\n",
@@ -48,9 +48,9 @@ defmodule ProfileUpdater do
         |> Enum.concat(formatted_hacktoberfest_projects)
         |> Enum.concat(["\n"])
         |> Enum.concat(content)
-      else
-        content
-      end
+      # else
+      #   content
+      # end
 
     content =
       content
