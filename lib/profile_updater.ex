@@ -25,8 +25,13 @@ defmodule ProfileUpdater do
     {:ok, formatted_active_projects} = format_projects(active_projects)
     {:ok, formatted_hacktoberfest_projects} = format_projects(hacktoberfest_projects, true)
 
-    {200, pr_pages, _res} = Tentacat.Search.issues(client, q: "type:pr user:narze is:merged created:2021-10-01..2021-10-31", sort: "created")
-    {200, pr_data, _res}  = pr_pages |> List.first()
+    {200, pr_pages, _res} =
+      Tentacat.Search.issues(client,
+        q: "type:pr user:narze is:merged created:2021-10-01..2021-10-31",
+        sort: "created"
+      )
+
+    {200, pr_data, _res} = pr_pages |> List.first()
     merged_prs_count = pr_data |> get_in(["total_count"])
 
     %DateTime{month: month, day: day} = DateTime.utc_now()
@@ -36,21 +41,27 @@ defmodule ProfileUpdater do
       |> Enum.concat(["\n"])
       |> Enum.concat(formatted_active_projects)
 
+    hacktoberfest_content =
+      [
+        "## Hacktoberfest projects (#{merged_prs_count} PRs merged!)",
+        "\n",
+        "\n",
+        "[What is Hacktoberfest?](https://hacktoberfest.digitalocean.com)"
+      ]
+      |> Enum.concat(["\n"])
+      |> Enum.concat(formatted_hacktoberfest_projects)
+      |> Enum.concat(["\n"])
+
     content =
-      # if month == 10 || (month == 11 && day <= 7) do
-        [
-          "## Hacktoberfest projects (#{merged_prs_count} PRs merged!)",
-          "\n",
-          "\n",
-          "[What is Hacktoberfest?](https://hacktoberfest.digitalocean.com)"
-        ]
-        |> Enum.concat(["\n"])
-        |> Enum.concat(formatted_hacktoberfest_projects)
-        |> Enum.concat(["\n"])
+      if month == 10 || (month == 11 && day <= 7) do
+        hacktoberfest_content
         |> Enum.concat(content)
-      # else
-      #   content
-      # end
+      else
+        ["<details><summary>Hacktoberfest 2021</summary>", "\n"]
+        |> Enum.concat(hacktoberfest_content)
+        |> Enum.concat(["\n", "</details>", "\n"])
+        |> Enum.concat(content)
+      end
 
     content =
       content
@@ -209,11 +220,12 @@ defmodule ProfileUpdater do
       "torpleng" => "ต่อเพลง",
       "toSkoy" => "เว็บแปลงภาษาสก๊อย",
       "THIS_REPO_HAS_3077_STARS" => "THIS REPO HAS 3077 STARS (Banned)",
-      "can-i-order-macbook-m1-max-in-thailand-now" => "Can I order MacBook M1 Max in Thailand now?",
+      "can-i-order-macbook-m1-max-in-thailand-now" =>
+        "Can I order MacBook M1 Max in Thailand now?",
       "Awesome-maas" => "Awesome Markdown as a service",
       "Awesome-websites-as-answers" => "Awesome websites as answers",
       "M1-max-excuses" => "M1 Max Excuses",
-      "Single-page-svelte" => "Single Page Svelte",
+      "Single-page-svelte" => "Single Page Svelte"
     }
 
     if Map.has_key?(nicknames, name) do
