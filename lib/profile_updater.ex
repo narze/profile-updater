@@ -37,9 +37,10 @@ defmodule ProfileUpdater do
     %DateTime{month: month, day: day} = DateTime.utc_now()
 
     content =
-      ["## Active projects"]
+      ["<details><summary><strong>Active projects</strong></summary>"]
       |> Enum.concat(["\n"])
       |> Enum.concat(formatted_active_projects)
+      |> Enum.concat(["\n", "</details>", "\n"])
 
     hacktoberfest_content =
       [
@@ -57,7 +58,7 @@ defmodule ProfileUpdater do
         hacktoberfest_content
         |> Enum.concat(content)
       else
-        ["<details><summary>Hacktoberfest 2021</summary>", "\n"]
+        ["<details><summary><strong>Hacktoberfest 2021</strong></summary>", "\n"]
         |> Enum.concat(hacktoberfest_content)
         |> Enum.concat(["\n", "</details>", "\n"])
         |> Enum.concat(content)
