@@ -1,6 +1,6 @@
 # ProfileUpdater
 
-Updates https://github.com/narze/narze every hour
+Updates https://github.com/narze/narze periodically
 
 ## Development
 
