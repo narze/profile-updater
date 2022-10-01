@@ -31,9 +31,10 @@ defmodule ProfileUpdater do
         sort: "created"
       )
 
-    # pr_data = pr_pages |> List.first()
-    # merged_prs_count = pr_data |> get_in(["total_count"])
-    merged_prs_count = pr_pages |> get_in(["total_count"])
+    {200, pr_data, _res} = pr_pages |> List.first()
+    merged_prs_count = pr_data |> get_in(["total_count"])
+
+    # merged_prs_count = pr_pages |> get_in(["total_count"])
 
     %DateTime{month: month, day: day} = DateTime.utc_now()
 
