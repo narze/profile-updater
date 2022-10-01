@@ -27,12 +27,13 @@ defmodule ProfileUpdater do
 
     {200, pr_pages, _res} =
       Tentacat.Search.issues(client,
-        q: "type:pr user:narze is:merged created:2021-10-01..2021-10-31",
+        q: "type:pr user:narze is:merged created:2022-10-01..2022-10-31",
         sort: "created"
       )
 
-    {200, pr_data, _res} = pr_pages |> List.first()
-    merged_prs_count = pr_data |> get_in(["total_count"])
+    # pr_data = pr_pages |> List.first()
+    # merged_prs_count = pr_data |> get_in(["total_count"])
+    merged_prs_count = pr_pages |> get_in(["total_count"])
 
     %DateTime{month: month, day: day} = DateTime.utc_now()
 
@@ -58,7 +59,7 @@ defmodule ProfileUpdater do
         hacktoberfest_content
         |> Enum.concat(content)
       else
-        ["<details><summary><strong>Hacktoberfest 2021</strong></summary>", "\n"]
+        ["<details><summary>Hacktoberfest 2022</summary>", "\n"]
         |> Enum.concat(hacktoberfest_content)
         |> Enum.concat(["\n", "</details>", "\n"])
         |> Enum.concat(content)
