@@ -33,7 +33,7 @@ jobs:
         # outputs: ${steps.setup-beam.outputs.(opt, elixir, rebar3)-version} (exact version installed)
 
       - name: Restore dependency/build cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             deps
