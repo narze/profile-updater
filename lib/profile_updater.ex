@@ -27,7 +27,7 @@ defmodule ProfileUpdater do
 
     {200, pr_pages, _res} =
       Tentacat.Search.issues(client,
-        q: "type:pr user:narze is:merged created:2022-10-01..2022-10-31",
+        q: "type:pr user:narze is:merged created:2023-10-01..2023-10-31",
         sort: "created"
       )
 
@@ -60,7 +60,7 @@ defmodule ProfileUpdater do
         hacktoberfest_content
         |> Enum.concat(content)
       else
-        ["<details><summary>Hacktoberfest 2022</summary>", "\n"]
+        ["<details><summary>Hacktoberfest 2023</summary>", "\n"]
         |> Enum.concat(hacktoberfest_content)
         |> Enum.concat(["\n", "</details>", "\n"])
         |> Enum.concat(content)
