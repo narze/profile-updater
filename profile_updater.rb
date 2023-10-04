@@ -1,3 +1,5 @@
+require 'bundler/setup'
+
 require 'octokit'
 require 'base64'
 require 'date'
