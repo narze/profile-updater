@@ -3,7 +3,7 @@ name: Run
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 */2 * * *"
   push:
     branches: [main]
   pull_request:
@@ -15,65 +15,16 @@ jobs:
   run:
     name: Run
     runs-on: ubuntu-latest
-    # env:
-    #   MIX_ENV: test
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install Erlang/OTP + Elixir
-        id: setup-beam
-        uses: erlef/setup-beam@v1
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
         with:
-          otp-version: "24.0" # version range or exact (required)
-          elixir-version: "1.12.0" # version range or exact (required)
-          # install-hex: true (default)
-          # install-rebar: true (default)
-        # outputs: ${steps.setup-beam.outputs.(opt, elixir, rebar3)-version} (exact version installed)
-
-      - name: Restore dependency/build cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            deps
-            _build
-          # cache key is hierarchical: OS, otp-version, elixir-version, mix.lock
-          key: ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}
-          # restore keys are tried on cache misses, and only match the key prefix
-          restore-keys: |
-            ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-
-            ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-
-            ${{ runner.os }}-mix-
-
-      - name: Dependencies 🔗
-        run: |
-          mix deps.get
-          mix deps.compile
-
-      # - name: Code 🔧
-      #   run: |
-      #     # mix format --check-formatted
-      #     # mix compile --warnings-as-errors
-      #     # mix credo --strict
-      #     # mix dialyzer
-      #     # mix docs
+          ruby-version: "3.2" # Not needed with a .ruby-version file
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
 
       - name: Run code
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          mix run -e "ProfileUpdater.run"
-
-      # - name: Test 🦺
-      #   run: |
-      #     mix test --warnings-as-errors --cover --export-coverage default
-      #     mix test.coverage
-
-      # - name: Artifacts 📚
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: doc-cover
-      #     path: |
-      #       doc
-      #       cover
+          ruby profile_updater.rb
