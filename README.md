@@ -6,15 +6,15 @@ Updates https://github.com/narze/narze periodically
 
 ```shell
 # Install dependencies
-mix deps.get
+bundle install
 
 # Prepare ENV
 export GH_TOKEN=your_github_personal_token
 
 # Dry run, without committing
-mix run -e "ProfileUpdater.run(true)"
+ruby profile_updater.rb -N
 cat output.md
 
-# Real run
-mix run -e "ProfileUpdater.run"
+# Real run, will update README.md and commit
+ruby profile_updater.rb
 ```
