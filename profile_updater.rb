@@ -44,7 +44,7 @@ module ProfileUpdater
       "## Hacktoberfest projects (#{merged_prs_count} PRs merged!)\n\n",
       "[What is Hacktoberfest?](https://hacktoberfest.digitalocean.com)\n"
     ]
-    content << formatted_hacktoberfest_projects.join("\n")
+    hacktoberfest_content << formatted_hacktoberfest_projects.join("\n")
 
     is_hacktoberfest = (month == 10) || (month == 11 && day <= 7)
 
